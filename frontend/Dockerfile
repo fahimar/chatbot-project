@@ -1,13 +1,21 @@
-FROM node:slim
-
+# Build stage
+FROM node:slim AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json first for better caching
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 RUN npm install
-
-# Copy the rest of the application
 COPY . .
+RUN npm run build
 
-# Start the development server
-CMD ["npm", "run", "dev"]
+# Production stage
+FROM node:slim
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.js ./
+
+EXPOSE 3000
+CMD ["npm", "start"]
