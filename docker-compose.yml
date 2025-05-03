@@ -12,9 +12,12 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
+    networks:
+      - app-network
 
   backend:
     build:
@@ -26,6 +29,14 @@ services:
       - ./backend:/app
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - CORS_ORIGINS=http://localhost:3000
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - PYTHONUNBUFFERED=1
     env_file:
       - .env
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

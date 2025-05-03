@@ -8,6 +8,7 @@ export default function ChatInterface() {
     { role: "assistant", content: "Hello! How can I help you today?" },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to bottom of messages
@@ -16,7 +17,12 @@ export default function ChatInterface() {
   }, [messages]);
 
   const sendMessage = async (messageText) => {
+    if (!messageText.trim()) return;
+
     try {
+      // Clear any previous errors
+      setError(null);
+
       // Create the user message
       const userMessage = { role: "user", content: messageText };
 
@@ -35,13 +41,7 @@ export default function ChatInterface() {
       });
     } catch (error) {
       console.error("Error in message handling:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, I encountered an error. Please try again.",
-        },
-      ]);
+      setError("Failed to send message. Please try again.");
       setIsLoading(false);
     }
   };
@@ -49,24 +49,62 @@ export default function ChatInterface() {
   // Separate function to handle the API call
   const sendToAPI = async (currentMessages) => {
     try {
-      // Send the message to the API with the current messages array
-      const response = await axios.post("/api/chat", {
-        messages: currentMessages,
-      });
+      // Configure axios with retry logic
+      const maxRetries = 3;
+      let retries = 0;
+      let success = false;
 
-      // Add the AI response to the state
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: response.data.response },
-      ]);
+      while (!success && retries < maxRetries) {
+        try {
+          // Send the message to the API with the current messages array
+          console.log("Sending message to API, attempt:", retries + 1);
+
+          const response = await axios.post(
+            "/api/chat",
+            {
+              messages: currentMessages,
+            },
+            {
+              timeout: 30000, // 30 second timeout
+            }
+          );
+
+          // Add the AI response to the state
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: response.data.response },
+          ]);
+
+          success = true;
+        } catch (err) {
+          retries++;
+          console.error(
+            `API request failed (attempt ${retries}/${maxRetries}):`,
+            err
+          );
+
+          if (retries >= maxRetries) {
+            throw err; // Rethrow the error if we've exhausted our retries
+          }
+
+          // Wait before retrying (exponential backoff)
+          await new Promise((resolve) => setTimeout(resolve, 1000 * retries));
+        }
+      }
     } catch (error) {
-      console.error("Error sending message to API:", error);
+      console.error("Error sending message to API after retries:", error);
+
+      setError(
+        error.response?.data?.error ||
+          "Failed to connect to the AI service. Please check your connection and try again."
+      );
+
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content:
-            "Sorry, I encountered an error communicating with the AI service. Please try again.",
+            "Sorry, I encountered an error communicating with the AI service. Please try again later.",
         },
       ]);
     } finally {
@@ -80,6 +118,7 @@ export default function ChatInterface() {
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
         ))}
+
         {isLoading && (
           <div className="flex items-center mt-2">
             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3">
@@ -92,9 +131,24 @@ export default function ChatInterface() {
             </div>
           </div>
         )}
+
+        {error && (
+          <div className="text-red-500 p-2 my-2 bg-red-50 rounded">
+            <p>Error: {error}</p>
+            <p className="text-sm mt-1">
+              Please check that your backend service is running properly.
+            </p>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
-      <MessageInput onSendMessage={sendMessage} isLoading={isLoading} />
+
+      <MessageInput
+        onSendMessage={sendMessage}
+        isLoading={isLoading}
+        isError={!!error}
+      />
     </div>
   );
 }
