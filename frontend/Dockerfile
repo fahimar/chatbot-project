@@ -1,21 +1,27 @@
 # Build stage
 FROM node:slim as builder
 
-# Set working directory - this is critical!
-WORKDIR /app/frontend
+# Set working directory
+WORKDIR /app
 
 # Copy package files
-COPY frontend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application
-COPY frontend/ ./
+# Copy the frontend directory content
+COPY . ./
 
-# Debug: Check directory structure
-RUN ls -la
-RUN find . -type d | sort
+# Create a pages directory at the root level with content from src/pages
+# This is the key fix - much simpler than symbolic links
+RUN mkdir -p pages && cp -r src/pages/* pages/
+
+# Debug: Show the directory structure to verify pages are correctly set up
+RUN ls -la && echo "Pages directory:" && ls -la pages
+
+# Copy next.config.js to ensure it's available
+RUN cp next.config.js ./
 
 # Build the application
 RUN npm run build
@@ -24,12 +30,14 @@ RUN npm run build
 FROM node:slim
 
 # Set working directory
-WORKDIR /app/frontend
+WORKDIR /app
 
 # Copy necessary files from build stage
-COPY --from=builder /app/frontend/package*.json ./
-COPY --from=builder /app/frontend/.next ./.next
-COPY --from=builder /app/frontend/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/pages ./pages
 
 # Install production dependencies
 RUN npm install --production
