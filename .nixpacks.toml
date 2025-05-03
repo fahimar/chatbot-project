@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+workingDir = "./frontend"
+cmds = ["npm install"]
+
+[phases.build]
+workingDir = "./frontend"
+cmds = ["npm run build"]
+
+[start]
+workingDir = "./frontend"
+cmd = "npm start"
