@@ -1,8 +1,6 @@
 # Build stage
 FROM node:slim as builder
 
-# Base image
-FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE ${PORT:-3000}
 
 # Command to run the application
 CMD ["npm", "start"]
