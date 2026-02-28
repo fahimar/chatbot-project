@@ -2,18 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx"],
-  async rewrites() {
-    // Add fallback handling for undefined environment variables
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    console.log("API URL for rewrites:", apiUrl); // Debug log
-
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`,
-      },
-    ];
-  },
+  // No rewrites needed — all API calls handled in pages/api/chat.js proxy route
+  // Backend (localhost:8000) is intentionally unused. FACES API (167.86.78.35:8088) used directly.
 };
 
 module.exports = nextConfig;

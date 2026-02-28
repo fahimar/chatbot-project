@@ -1,58 +1,73 @@
-// pages/api/chat.js
-import axios from "axios";
+/**
+ * pages/api/chat.js
+ * ─────────────────────────────────────────────────────────────
+ * FACES Health RAG Chatbot — Next.js API Proxy
+ * Proxies all requests to http://167.86.78.35:8088
+ * Local backend is intentionally unused.
+ * ─────────────────────────────────────────────────────────────
+ */
+
+// Extend Next.js API route timeout to 6 minutes (default is 60s)
+export const config = {
+  api: {
+    responseLimit: false,
+    bodyParser: true,
+    externalResolver: true, // tells Next.js an external service handles timing
+  },
+};
+
+const FACES_BASE_URL = "http://167.86.78.35:8088";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const { question, session_id, k = 5 } = req.body;
+
+  if (!question || !question.trim()) {
+    return res.status(400).json({ error: "question is required" });
+  }
+
+  console.log(`[FACES API] POST /chat | session: ${session_id || "new"}`);
+
   try {
-    const { messages } = req.body;
+    const response = await fetch(`${FACES_BASE_URL}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        question: question.trim(),
+        session_id: session_id || null,
+        k,
+      }),
+      // Node 18+ native fetch has no built-in timeout; use AbortController
+      signal: AbortSignal.timeout(360_000), // 6 minutes (FACES RAG can be very slow)
+    });
 
-    // Better error logging
-    console.log(
-      "Sending request to backend with messages:",
-      messages.length > 0 ? `${messages.length} messages` : "No messages"
-    );
+    const data = await response.json();
 
-    // Define the backend URL using environment variables with fallbacks
-    const backendUrl = process.env.BACKEND_URL || "http://backend:8000";
-    console.log(`Using backend URL: ${backendUrl}/api/chat`);
+    if (!response.ok) {
+      console.error("[FACES API] Error response:", data);
+      return res.status(response.status).json({
+        error: data.detail || "FACES API error",
+      });
+    }
 
-    // Add timeout configuration and retry logic
-    const response = await axios.post(
-      `${backendUrl}/api/chat`,
-      { messages },
-      {
-        timeout: 30000, // 30 second timeout
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    // Return the response from the backend
-    return res.status(200).json(response.data);
+    // data = { answer, session_id }
+    return res.status(200).json(data);
   } catch (error) {
-    console.error("Error in chat API:", error);
+    console.error("[FACES API] Fetch failed:", error.message);
 
-    // Enhanced error reporting
-    const errorDetails = {
-      message: error.message,
-      code: error.code,
-      response: error.response
-        ? {
-            status: error.response.status,
-            data: error.response.data,
-          }
-        : null,
-    };
-
-    console.error("Detailed error:", JSON.stringify(errorDetails, null, 2));
+    if (error.name === "TimeoutError") {
+      return res.status(504).json({ error: "Request timed out (6 min). The AI model may be busy — please try again." });
+    }
 
     return res.status(500).json({
-      error: "Failed to communicate with AI service",
-      details: errorDetails,
+      error: "Failed to reach FACES API",
+      detail: error.message,
     });
   }
 }
