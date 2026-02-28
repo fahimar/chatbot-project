@@ -99,7 +99,8 @@ export default function ChatInterface() {
     const handleUnload = () => {
       const id = getSessionId();
       if (id) {
-        fetch(`http://167.86.78.35:8088/sessions/${id}`, { method: "DELETE" });
+        // Use Next.js rewrite path — works on localhost AND Vercel
+        fetch(`/faces-api/sessions/${id}`, { method: "DELETE" });
       }
     };
     window.addEventListener("beforeunload", handleUnload);
