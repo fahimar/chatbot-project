@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gemini API Key</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Your Gemini API Key</h1>
+        <p>এই page দিয়ে আপনি direct test করতে পারবেন আপনার API key কাজ করছে কিনা।</p>
+        
+        <label for="apiKey"><strong>Gemini API Key:</strong></label>
+        <input 
+            type="text" 
+            id="apiKey" 
+            placeholder="AIzaSy..." 
+            value="AIzaSyBKytRZQLJLLZE6xm0_OtSMWhOflrGDneA"
+        />
+        
+        <label for="testMessage"><strong>Test Message:</strong></label>
+        <input 
+            type="text" 
+            id="testMessage" 
+            placeholder="Say hello in one word" 
+            value="Say hello in one word"
+        />
+        
+        <button onclick="testAPI()" id="testBtn">🚀 Test API</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const message = document.getElementById('testMessage').value.trim();
+            const resultDiv = document.getElementById('result');
+            const testBtn = document.getElementById('testBtn');
+            
+            if (!apiKey) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter your API key!</div>';
+                return;
+            }
+            
+            testBtn.disabled = true;
+            resultDiv.innerHTML = '<div class="loading">⏳ Testing API key... Please wait...</div>';
+            
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: message
+                                }]
+                            }]
+                        })
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (response.ok && data.candidates && data.candidates[0]) {
+                    const text = data.candidates[0].content.parts[0].text;
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Success! Your API key works!</h3>
+                            <p><strong>Response:</strong> ${text}</p>
+                            <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                                Your API key is valid and working. You can now use it in your chatbot.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ API Error</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${JSON.stringify(data, null, 2)}</p>
+                            <hr>
+                            <p><strong>Common Solutions:</strong></p>
+                            <ul>
+                                <li>Check if API key is correct</li>
+                                <li>Enable "Generative Language API" in Google Cloud Console</li>
+                                <li>Wait 5-10 minutes after creating new API key</li>
+                                <li>Check API quota limits</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                        <p><strong>Possible causes:</strong></p>
+                        <ul>
+                            <li>Network connectivity issue</li>
+                            <li>Firewall blocking Google APIs</li>
+                            <li>CORS issue (try from different browser)</li>
+                        </ul>
+                    </div>
+                `;
+            } finally {
+                testBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
