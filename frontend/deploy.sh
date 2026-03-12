@@ -37,27 +37,21 @@ echo ""
 echo "🛑 [4/5] Stopping existing process on port $PORT..."
 # Kill any process using the port
 fuser -k ${PORT}/tcp 2>/dev/null || true
-# Kill pm2 if running
-pm2 delete $APP_NAME 2>/dev/null || true
+# Kill pm2 if running (check both global and local)
+pm2 delete $APP_NAME 2>/dev/null || npx pm2 delete $APP_NAME 2>/dev/null || true
 echo "✅ Old process stopped"
 
-# ── Step 5: Start with PM2 ───────────────────────────────────
+# ── Step 5: Start with PM2 (npx, no global install) ──────────
 echo ""
 echo "🚀 [5/5] Starting server with PM2 on port $PORT..."
 
-# Check if pm2 is installed
-if ! command -v pm2 &>/dev/null; then
-  echo "⚠️  PM2 not found — installing..."
-  npm install -g pm2
-fi
-
-pm2 start npm \
+npx pm2 start npm \
   --name "$APP_NAME" \
   --restart-delay=3000 \
   --max-restarts=10 \
   -- start -- -p $PORT
 
-pm2 save
+npx pm2 save
 echo "✅ Server started"
 
 # ── Summary ──────────────────────────────────────────────────
@@ -67,4 +61,9 @@ echo "║   ✅ Deploy complete!                    ║"
 echo "║   🌐 http://$(hostname -I | awk '{print $1}'):$PORT        ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
-pm2 status $APP_NAME
+npx pm2 status $APP_NAME
+echo ""
+echo "💡 Useful commands:"
+echo "   npx pm2 logs $APP_NAME     # View logs"
+echo "   npx pm2 restart $APP_NAME  # Restart app"
+echo "   npx pm2 stop $APP_NAME     # Stop app"
