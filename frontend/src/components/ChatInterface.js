@@ -36,6 +36,8 @@ export default function ChatInterface() {
   const messagesEndRef = useRef(null);
   const abortControllerRef = useRef(null);
   const waitTimerRef = useRef(null);
+  // Ref mirrors sessionId state so async fetch closures always get latest value
+  const sessionIdRef = useRef(null);
 
   // ── Wait-time counter while loading ──────────────────────────
   useEffect(() => {
@@ -84,8 +86,10 @@ export default function ChatInterface() {
 
         setMessages([WELCOME_MESSAGE, ...restored]);
         setLocalSessionId(storedId);
+        sessionIdRef.current = storedId; // keep ref in sync
       } catch {
         clearSessionId();
+        sessionIdRef.current = null;
       } finally {
         setIsLoadingHistory(false);
       }
@@ -133,7 +137,7 @@ export default function ChatInterface() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: messageText.trim(),
-          session_id: sessionId,
+          session_id: sessionIdRef.current, // always latest value — not stale state
           k: 5,
         }),
         signal: abortControllerRef.current.signal,
@@ -147,10 +151,11 @@ export default function ChatInterface() {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
 
-      // Save session ID from first response
-      if (data.session_id && data.session_id !== sessionId) {
-        setLocalSessionId(data.session_id);
-        setSessionId(data.session_id);
+      // First response returns a new session_id — save it immediately to ref + state + localStorage
+      if (data.session_id && data.session_id !== sessionIdRef.current) {
+        sessionIdRef.current = data.session_id;   // sync ref first (instant, no re-render)
+        setLocalSessionId(data.session_id);        // update UI (header shows session id)
+        setSessionId(data.session_id);             // persist to localStorage
       }
 
       setMessages((prev) => [
@@ -201,6 +206,7 @@ export default function ChatInterface() {
       await clearHistory(currentId).catch(() => {});
     }
     clearSessionId();
+    sessionIdRef.current = null; // reset ref
     setLocalSessionId(null);
     setMessages([WELCOME_MESSAGE]);
     setError(null);

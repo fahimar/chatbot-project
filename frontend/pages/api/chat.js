@@ -12,7 +12,6 @@ export const config = {
   api: {
     responseLimit: false,
     bodyParser: true,
-    externalResolver: true, // tells Next.js an external service handles timing
   },
 };
 
@@ -31,6 +30,9 @@ export default async function handler(req, res) {
 
   console.log(`[FACES API] POST /chat | session: ${session_id || "new"}`);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 360_000); // 6 minutes
+
   try {
     const response = await fetch(`${FACES_BASE_URL}/chat`, {
       method: "POST",
@@ -43,9 +45,10 @@ export default async function handler(req, res) {
         session_id: session_id || null,
         k,
       }),
-      // Node 18+ native fetch has no built-in timeout; use AbortController
-      signal: AbortSignal.timeout(360_000), // 6 minutes (FACES RAG can be very slow)
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const data = await response.json();
 
@@ -59,9 +62,10 @@ export default async function handler(req, res) {
     // data = { answer, session_id }
     return res.status(200).json(data);
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error("[FACES API] Fetch failed:", error.message);
 
-    if (error.name === "TimeoutError") {
+    if (error.name === "AbortError") {
       return res.status(504).json({ error: "Request timed out (6 min). The AI model may be busy — please try again." });
     }
 
