@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Allow committing our local helper libs (root .gitignore ignores "lib/")
+!src/lib/
+!src/lib/*
