@@ -2,8 +2,8 @@
  * pages/api/chat.js
  * ─────────────────────────────────────────────────────────────
  * FACES Health RAG Chatbot — Next.js API Proxy
- * Proxies all requests to http://167.86.78.35:8088
- * Local backend is intentionally unused.
+ * Proxies /chat to the FACES backend on the same host (localhost:8088).
+ * Internal call — no public network hop; override with FACES_BACKEND_URL.
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -15,7 +15,7 @@ export const config = {
   },
 };
 
-const FACES_BASE_URL = "http://167.86.78.35:8088";
+const FACES_BASE_URL = process.env.FACES_BACKEND_URL || "http://localhost:8088";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

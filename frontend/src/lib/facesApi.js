@@ -2,10 +2,10 @@
  * FACES Health RAG Chatbot — API Service
  *
  * POST /chat      → /api/chat          (Next.js proxy, custom 6-min timeout)
- * GET/DELETE      → /faces-api/*       (Next.js rewrite → 167.86.78.35:8088)
+ * GET/DELETE      → /faces-api/*       (Next.js rewrite → backend on localhost:8088)
  *
- * No hardcoded external URLs in browser code.
- * Works on localhost AND Vercel without any changes.
+ * No hardcoded external URLs in browser code — the backend host lives only
+ * in next.config.js / pages/api/chat.js (FACES_BACKEND_URL, default localhost:8088).
  */
 
 const SESSION_KEY = "faces_session_id";
