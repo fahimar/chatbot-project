@@ -1,7 +1,7 @@
 /**
  * MessageInput.js
- * Chat input bar — supports Enter to send, Shift+Enter for newline,
- * character counter, and loading state.
+ * FACES composer — disclaimer strip + pill input with plus/attach icon and
+ * cyan circular send button. Enter to send, Shift+Enter for newline.
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -41,98 +41,115 @@ export default function MessageInput({ onSendMessage, isLoading }) {
   const canSend = message.trim() && !isLoading && !isOverLimit;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-t border-gray-100 bg-white px-4 py-3"
-    >
-      <div className="flex items-end gap-2">
-        {/* Textarea */}
-        <div className="relative flex-grow">
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            className={`w-full resize-none border rounded-xl px-4 py-2.5 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition-colors placeholder-gray-400 ${
-              isOverLimit
-                ? "border-red-400 focus:ring-red-400"
-                : "border-gray-200"
-            }`}
-            placeholder={
-              isLoading ? "Waiting for response..." : "Ask about our treatments…"
-            }
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-          />
-          {/* Character counter */}
-          <span
-            className={`absolute bottom-2.5 right-3 text-[10px] select-none ${
-              isOverLimit
-                ? "text-red-500 font-semibold"
-                : remaining <= 50
-                ? "text-amber-500"
-                : "text-gray-300"
-            }`}
-          >
-            {remaining}
-          </span>
-        </div>
+    <div className="bg-white border-t border-[#E2E8F0]">
+      {/* Disclaimer strip */}
+      <p className="text-[11px] text-[#64748B] text-center px-5 pt-2 leading-snug">
+        General guidance only — your practitioner will confirm medical advice.
+      </p>
 
-        {/* Send button */}
-        <button
-          type="submit"
-          disabled={!canSend}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-            canSend
-              ? "bg-gradient-to-br from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-sm hover:shadow"
-              : "bg-gray-100 text-gray-300 cursor-not-allowed"
-          }`}
-          title="Send message (Enter)"
-        >
-          {isLoading ? (
+      <form onSubmit={handleSubmit} className="px-3 py-2.5">
+        <div className="flex items-end gap-2">
+          {/* Attachment button */}
+          <button
+            type="button"
+            title="Add attachment"
+            aria-label="Add attachment"
+            className="w-10 h-10 rounded-full border border-[#E2E8F0] text-[#64748B] flex items-center justify-center shrink-0 hover:border-[#22D3EE] hover:text-[#06B6D4] transition-colors"
+          >
             <svg
-              className="animate-spin w-4 h-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          ) : (
-            /* Send arrow icon */
-            <svg
-              className="w-4 h-4"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
-              strokeWidth={2.5}
+              strokeWidth={2}
+              strokeLinecap="round"
               viewBox="0 0 24 24"
             >
-              <path
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+
+          {/* Pill input */}
+          <div
+            className={`relative flex-grow flex items-center bg-[#F8FAFC] border rounded-full transition-colors focus-within:border-[#22D3EE] ${
+              isOverLimit ? "border-red-400" : "border-[#E2E8F0]"
+            }`}
+          >
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              className="w-full resize-none bg-transparent border-none rounded-full pl-4 pr-12 py-2.5 text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none"
+              placeholder={
+                isLoading ? "Waiting for response…" : "Ask about treatments…"
+              }
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+            />
+            {/* Character counter */}
+            <span
+              className={`absolute bottom-2.5 right-4 text-[10px] select-none ${
+                isOverLimit
+                  ? "text-red-500 font-semibold"
+                  : remaining <= 50
+                  ? "text-[#F59E0B]"
+                  : "text-[#CBD5E1]"
+              }`}
+            >
+              {remaining}
+            </span>
+          </div>
+
+          {/* Send button */}
+          <button
+            type="submit"
+            disabled={!canSend}
+            title="Send message (Enter)"
+            aria-label="Send message"
+            className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all ${
+              canSend
+                ? "bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] text-white shadow-[0_4px_12px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95"
+                : "bg-[#E2E8F0] text-white/70 cursor-not-allowed"
+            }`}
+          >
+            {isLoading ? (
+              <svg
+                className="animate-spin w-4 h-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              /* Send arrow icon */
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-              />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      <p className="text-[10px] text-gray-300 mt-1.5 pl-1">
-        Enter to send · Shift+Enter for new line · Response may take 5–25 sec
-      </p>
-    </form>
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
-

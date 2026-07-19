@@ -13,7 +13,9 @@ const jetbrainsMono = JetBrains_Mono({
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+    <div
+      className={`${inter.className} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
+    >
       <Component {...pageProps} />
     </div>
   );

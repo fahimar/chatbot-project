@@ -21,13 +21,16 @@ import {
 const WELCOME_MESSAGE = {
   role: "assistant",
   content:
-    "👋 Hello! I'm the **FACES Health AI Assistant**.\n\nI can answer questions about our aesthetic treatments, including Botox, fillers, skin care, training courses, and more. How can I help you today?",
+    "Hi! I'm your **FACES assistant** 👋\n\nI'm here to help with your treatments — I can share treatment info, pricing, or aftercare guidance. How can I help you today?",
   timestamp: new Date().toISOString(),
 };
 
+// Quick-reply starter chips shown under the welcome message
+const STARTER_CHIPS = ["Aftercare advice", "Book a treatment", "Pricing"];
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
-  const [sessionId, setLocalSessionId] = useState(null);
+  const [, setLocalSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [waitSeconds, setWaitSeconds] = useState(0);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -216,8 +219,8 @@ export default function ChatInterface() {
   if (isLoadingHistory) {
     return (
       <div className="flex flex-col h-[80vh] bg-white rounded-2xl shadow-lg items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-gray-400">
-          <div className="w-10 h-10 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-3 text-[#64748B]">
+          <div className="w-10 h-10 border-4 border-[#E0FAFF] border-t-[#22D3EE] rounded-full animate-spin" />
           <p className="text-sm">Restoring your conversation...</p>
         </div>
       </div>
@@ -225,19 +228,26 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-col h-[80vh] bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+    <div className="flex flex-col h-[80vh] bg-[#F8FAFC] rounded-2xl shadow-lg overflow-hidden border border-[#E2E8F0]">
       {/* ── Chat header ── */}
-      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-[#E2E8F0]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">
-            F
+          {/* Cyan heart-in-circle logo */}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] flex items-center justify-center shadow-[0_4px_12px_rgba(6,182,212,0.35)]">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden="true">
+              <path
+                d="M12 20s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 4.65-7 9-7 9Z"
+                fill="#fff"
+              />
+            </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold leading-tight">FACES Health AI</p>
-            <p className="text-xs text-rose-100 leading-tight">
-              {sessionId
-                ? `Session active · ${sessionId.slice(0, 8)}…`
-                : "No active session"}
+            <p className="text-lg font-semibold leading-tight text-[#0F172A]">
+              FACES Assistant
+            </p>
+            <p className="text-xs text-[#64748B] leading-tight flex items-center gap-1.5">
+              <span className="w-[7px] h-[7px] rounded-full bg-[#10B981] shadow-[0_0_0_3px_rgba(16,185,129,0.18)]" />
+              Here to help with your treatments
             </p>
           </div>
         </div>
@@ -245,32 +255,52 @@ export default function ChatInterface() {
           onClick={handleNewChat}
           disabled={isLoading}
           title="Start a new conversation"
-          className="text-xs bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-full font-medium disabled:opacity-50"
+          className="text-[13px] font-medium text-[#0891A6] bg-[#E0FAFF] hover:border-[#22D3EE] border border-transparent transition-colors px-3 py-1.5 rounded-full disabled:opacity-50"
         >
           + New Chat
         </button>
       </div>
 
       {/* ── Messages area ── */}
-      <div className="flex-grow overflow-y-auto p-4 space-y-1 bg-gray-50">
+      <div className="flex-grow overflow-y-auto p-4 space-y-1 bg-[#F8FAFC]">
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
         ))}
 
-        {/* Typing indicator */}
+        {/* Quick-reply starter chips — shown only on the fresh welcome screen */}
+        {messages.length === 1 && !isLoading && (
+          <div className="flex flex-wrap gap-2 pl-9 mb-2 motion-safe:animate-[fadeSlide_.2s_ease]">
+            {STARTER_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => sendMessage(chip)}
+                className="text-[13px] font-medium text-[#0891A6] bg-[#E0FAFF] border border-transparent px-3.5 py-2 rounded-full hover:border-[#22D3EE] active:bg-[#E0FAFF] transition-colors"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Typing indicator — three cyan pulsing dots */}
         {isLoading && (
           <div className="flex items-end gap-2 mt-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-              F
+            <div className="w-7 h-7 rounded-full bg-[#E0FAFF] border border-[#E2E8F0] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" aria-hidden="true">
+                <path
+                  d="M12 20s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 4.65-7 9-7 9Z"
+                  fill="#22D3EE"
+                />
+              </svg>
             </div>
-            <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl rounded-bl-[4px] px-4 py-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-rose-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="w-2 h-2 bg-[#22D3EE] rounded-full motion-safe:animate-[dotPulse_1.2s_infinite_ease-in-out]" />
+                  <span className="w-2 h-2 bg-[#22D3EE] rounded-full motion-safe:animate-[dotPulse_1.2s_infinite_ease-in-out] [animation-delay:180ms]" />
+                  <span className="w-2 h-2 bg-[#22D3EE] rounded-full motion-safe:animate-[dotPulse_1.2s_infinite_ease-in-out] [animation-delay:360ms]" />
                 </div>
-                <span className="text-xs text-gray-400 ml-1">
+                <span className="text-xs text-[#64748B] ml-1">
                   {waitSeconds < 5
                     ? "Thinking…"
                     : waitSeconds < 30
@@ -281,7 +311,7 @@ export default function ChatInterface() {
             </div>
             <button
               onClick={cancelRequest}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors underline ml-1"
+              className="text-xs text-[#64748B] hover:text-[#EF4444] transition-colors underline ml-1"
             >
               cancel
             </button>

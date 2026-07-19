@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* FACES chat — gentle, composed motion (no bouncy effects) */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dotPulse {
+  0%,
+  60%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.45;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

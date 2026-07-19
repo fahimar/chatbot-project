@@ -3,34 +3,40 @@ import ChatInterface from "../src/components/ChatInterface";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#E0FAFF]">
       <Head>
-        <title>FACES Health AI Assistant</title>
+        <title>FACES Assistant</title>
         <meta
           name="description"
-          content="FACES Health RAG Chatbot — Ask about aesthetic treatments, Botox, fillers, skincare & training courses."
+          content="FACES Assistant — your medical-aesthetics concierge. Ask about treatments, pricing, and aftercare guidance."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       {/* Header */}
-      <header className="bg-white border-b border-rose-100 shadow-sm">
+      <header className="bg-white border-b border-[#E2E8F0] shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-pink-400 flex items-center justify-center text-white font-bold text-sm shadow">
-              F
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] flex items-center justify-center shadow-[0_4px_12px_rgba(6,182,212,0.35)]">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden="true">
+                <path
+                  d="M12 20s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 4.65-7 9-7 9Z"
+                  fill="#fff"
+                />
+              </svg>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">
-                FACES Health
+              <h1 className="text-lg font-semibold text-[#0F172A] leading-tight">
+                FACES Assistant
               </h1>
-              <p className="text-xs text-rose-500 leading-tight font-medium">
-                AI Health Assistant
+              <p className="text-xs text-[#64748B] leading-tight">
+                Medical-aesthetics concierge
               </p>
             </div>
           </div>
-          <span className="text-xs bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-full font-medium">
-            ● Online
+          <span className="text-xs bg-[#ECFDF5] text-[#10B981] border border-[#A7F3D0] px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+            <span className="w-[6px] h-[6px] rounded-full bg-[#10B981]" />
+            Online
           </span>
         </div>
       </header>
@@ -40,11 +46,11 @@ export default function Home() {
         <div className="w-full max-w-3xl">
           {/* Intro */}
           <div className="text-center mb-5">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Ask about our treatments
+            <h2 className="text-xl font-semibold text-[#0F172A]">
+              Here to help with your treatments
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Botox · Fillers · Skincare · Training Courses · Pricing & more
+            <p className="text-sm text-[#64748B] mt-1">
+              Anti-wrinkle · Dermal fillers · Skincare · Aftercare · Pricing &amp; more
             </p>
           </div>
 
@@ -52,18 +58,16 @@ export default function Home() {
           <ChatInterface />
 
           {/* Disclaimer */}
-          <p className="text-center text-xs text-gray-400 mt-4">
-            This AI assistant provides general information only. For medical
-            advice, consult a qualified professional.
+          <p className="text-center text-xs text-[#94A3B8] mt-4">
+            General guidance only — your practitioner will confirm medical advice.
           </p>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-3">
-        <p className="text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} FACES Health · Powered by RAG AI ·
-          <span className="text-rose-400"> api.faces.health</span>
+      <footer className="bg-white border-t border-[#E2E8F0] py-3">
+        <p className="text-center text-xs text-[#94A3B8]">
+          © {new Date().getFullYear()} FACES · Medical-aesthetics clinic &amp; training academy
         </p>
       </footer>
     </div>
