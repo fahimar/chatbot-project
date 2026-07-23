@@ -155,14 +155,19 @@ export default function MessageInput({ onSendMessage, isLoading }) {
     tickerRef.current = setInterval(() => {
       setSeconds((s) => {
         const next = s + 1;
-        if (next >= MAX_RECORD_SECONDS) recorderRef.current?.stop();
+        if (next >= MAX_RECORD_SECONDS) stopRecorder();
         return next;
       });
     }, 1000);
   };
 
+  // stop() throws if the recorder is already inactive (double-click, ticker race)
+  const stopRecorder = () => {
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+  };
+
   const handleMicClick = () => {
-    if (recState === "recording") recorderRef.current?.stop();
+    if (recState === "recording") stopRecorder();
     else if (recState === "idle") startRecording();
   };
 
